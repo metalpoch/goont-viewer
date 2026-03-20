@@ -3,6 +3,7 @@ import FilterBar from './FilterBar';
 import MetricsSummary from './MetricsSummary';
 import TrafficChart from './TrafficChart';
 import GponTable from './GponTable';
+import OntTable from './OntTable';
 import { getGponTraffic, getDetailedOntTraffic } from '../services/api';
 
 const processGponData = (rawData) => {
@@ -241,7 +242,92 @@ const processDetailedOntData = (rawData) => {
     const avgBpsIn = validDaysCount > 0 ? sumAvgBpsIn / validDaysCount : 0;
     const avgBpsOut = validDaysCount > 0 ? sumAvgBpsOut / validDaysCount : 0;
 
+    const ontTableData = [];
+
+    Object.entries(rawData).forEach(([ontIdx, measurements]) => {
+        if (!measurements || measurements.length === 0) return;
+
+        const infoPoint = measurements[measurements.length - 1];
+        const status = infoPoint.status;
+        const desp = infoPoint.desp || `ONT ${ontIdx}`;
+        const sn = infoPoint.serial_number;
+        const plan = infoPoint.plan;
+        const distance = infoPoint.olt_distance;
+
+        const dailyBlocks = new Map();
+
+        measurements.forEach(m => {
+            const timeStr = m.time || m.hour;
+            if (!m || !timeStr) return;
+            const bpsInVal = m.bps_in || 0;
+            const bpsOutVal = m.bps_out || 0;
+
+            if (bpsInVal > 2.5e9 || bpsOutVal > 2.5e9) return;
+
+            const hourStr = timeStr.substring(11, 13);
+            const hours = parseInt(hourStr, 10);
+            const dateOnlyStr = timeStr.substring(0, 10);
+            const isMidnight = hours === 0;
+
+            const blockDate = new Date(dateOnlyStr + "T12:00:00Z");
+            if (isMidnight) blockDate.setUTCDate(blockDate.getUTCDate() - 1);
+            const dateStr = blockDate.toISOString().split('T')[0];
+
+            if (!dailyBlocks.has(dateStr)) {
+                dailyBlocks.set(dateStr, { bpsInSum: 0, bpsOutSum: 0, count: 0, volumeIn: null, volumeOut: null });
+            }
+            const block = dailyBlocks.get(dateStr);
+
+            if (hours >= 19 && hours <= 23) {
+                block.bpsInSum += bpsInVal;
+                block.bpsOutSum += bpsOutVal;
+                block.count += 1;
+            }
+
+            if (hours === 0) {
+                block.volumeIn = m.bytes_in || 0;
+                block.volumeOut = m.bytes_out || 0;
+            }
+        });
+
+        let totalVolumeIn = 0;
+        let totalVolumeOut = 0;
+        let pSumAvgBpsIn = 0;
+        let pSumAvgBpsOut = 0;
+        let pValidDaysCount = 0;
+        let pValidVolumeDaysCount = 0;
+
+        dailyBlocks.forEach((block) => {
+            if (block.count > 0) {
+                pSumAvgBpsIn += (block.bpsInSum / block.count);
+                pSumAvgBpsOut += (block.bpsOutSum / block.count);
+                pValidDaysCount += 1;
+            }
+            if (block.volumeIn !== null) {
+                totalVolumeIn += block.volumeIn;
+                totalVolumeOut += block.volumeOut;
+                pValidVolumeDaysCount += 1;
+            }
+        });
+
+        ontTableData.push({
+            ontIdx,
+            desp,
+            sn,
+            plan,
+            distance,
+            status,
+            avgBpsIn: pValidDaysCount > 0 ? (pSumAvgBpsIn / pValidDaysCount) : 0,
+            avgBpsOut: pValidDaysCount > 0 ? (pSumAvgBpsOut / pValidDaysCount) : 0,
+            avgBytesIn: pValidVolumeDaysCount > 0 ? (totalVolumeIn / pValidVolumeDaysCount) : 0,
+            avgBytesOut: pValidVolumeDaysCount > 0 ? (totalVolumeOut / pValidVolumeDaysCount) : 0,
+            totalBytesIn: totalVolumeIn,
+            totalBytesOut: totalVolumeOut
+        });
+    });
+
     return {
+        tableData: ontTableData,
         summary: {
             avgBpsIn,
             avgBpsOut,
@@ -375,6 +461,13 @@ const Dashboard = () => {
                             onRowClick={handleGponClick}
                             selectedGpon={selectedGpon}
                         />
+
+                        {selectedGpon && selectedGponData && selectedGponData.tableData && (
+                            <OntTable
+                                data={selectedGponData.tableData}
+                                selectedGpon={selectedGpon}
+                            />
+                        )}
                     </>
                 )}
             </main>
