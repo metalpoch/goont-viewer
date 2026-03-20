@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "goont-viewer2",
+  "outputfilename": "goont-viewer2",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Keiber Urbila",
+    "email": "keiberup.dev@gmail.com"
+  }
+}
