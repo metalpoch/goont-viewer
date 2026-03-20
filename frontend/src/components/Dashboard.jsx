@@ -4,6 +4,7 @@ import MetricsSummary from './MetricsSummary';
 import TrafficChart from './TrafficChart';
 import GponTable from './GponTable';
 import OntTable from './OntTable';
+import TopConsumers from './TopConsumers';
 import { getGponTraffic, getDetailedOntTraffic } from '../services/api';
 
 const processGponData = (rawData) => {
@@ -518,6 +519,14 @@ const Dashboard = () => {
                             selectedGpon={selectedGpon}
                             scope={currentScope}
                         />
+
+                        {currentScope !== 'ONT' && (
+                            <TopConsumers
+                                data={currentScope === 'GPON' ? selectedGponData.tableData : globalData.tableData}
+                                title={currentScope === 'GPON' ? `Top 5 Consumers in GPON` : `Top 5 GPONs by Volume`}
+                                type={currentScope === 'GPON' ? 'ONT' : 'GPON'}
+                            />
+                        )}
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
                             <TrafficChart
