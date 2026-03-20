@@ -61,7 +61,7 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
                     onChange={e => setSelectedIp(e.target.value)}
                     disabled={olts.length === 0}
                 >
-                    {olts.length === 0 && <option value="">Loading OLTs...</option>}
+                    {olts.length === 0 && <option value="">Cargando OLTs...</option>}
                     {olts.map(olt => (
                         <option key={olt.ip} value={olt.ip}>
                             {olt.name} ({olt.ip})
@@ -78,7 +78,7 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
                     value={initDate}
                     onChange={e => setInitDate(e.target.value)}
                 />
-                <span style={{ color: 'var(--text-muted)' }}>to</span>
+                <span style={{ color: 'var(--text-muted)' }}>hasta</span>
                 <input
                     type="date"
                     className="input-field"
@@ -94,7 +94,7 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
                     disabled={isLoading || !selectedIp}
                 >
                     {isLoading ? <RefreshCw size={18} className="spinner" /> : <RefreshCw size={18} />}
-                    Load Traffic
+                    Cargar Tráfico
                 </button>
             </div>
         </div>

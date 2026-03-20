@@ -5,6 +5,7 @@ import TrafficChart from './TrafficChart';
 import GponTable from './GponTable';
 import OntTable from './OntTable';
 import TopConsumers from './TopConsumers';
+import HelpModal from './HelpModal';
 import { getGponTraffic, getDetailedOntTraffic } from '../services/api';
 
 const processGponData = (rawData) => {
@@ -370,7 +371,7 @@ const Dashboard = () => {
             const processed = processGponData(data);
             setGlobalData(processed);
         } catch (err) {
-            setError(err.message || 'Error loading OLT data');
+            setError(err.message || 'Error cargando datos de la OLT');
         } finally {
             setIsLoading(false);
         }
@@ -395,7 +396,7 @@ const Dashboard = () => {
             const processed = processDetailedOntData(data);
             setSelectedGponData(processed);
         } catch (err) {
-            setError(err.message || 'Error loading GPON specific data');
+            setError(err.message || 'Error cargando datos específicos de GPON');
         } finally {
             setIsLoading(false);
         }
@@ -450,16 +451,17 @@ const Dashboard = () => {
             <header className="dashboard-header">
                 <h1 className="dashboard-title">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
-                    GoONT Traffic Dashboard
+                    Panel de Tráfico GoONT
                 </h1>
             </header>
 
             <main className="dashboard-content" style={{ position: 'relative' }}>
+                <HelpModal />
                 {isLoading && (
                     <div className="loading-overlay">
                         <div className="loading-content">
                             <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
-                            <span>Processing measurements...</span>
+                            <span>Procesando mediciones...</span>
                         </div>
                     </div>
                 )}
@@ -507,8 +509,8 @@ const Dashboard = () => {
                 {globalData && !error && globalData.tableData.length === 0 && (
                     <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', marginTop: '2rem' }}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 1rem' }}><circle cx="12" cy="12" r="10" /><path d="M16 16s-1.5-2-4-2-4 2-4 2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
-                        <h3 style={{ color: 'var(--text-main)', marginBottom: '0.5rem' }}>No Data Found for Selected Range</h3>
-                        <p style={{ color: 'var(--text-muted)' }}>The server answered successfully, but there were no traffic measurements in the dates you selected. Please try expanding your date range to include March 18th (when testing mock data).</p>
+                        <h3 style={{ color: 'var(--text-main)', marginBottom: '0.5rem' }}>Sin Datos para el Rango Seleccionado</h3>
+                        <p style={{ color: 'var(--text-muted)' }}>El servidor respondió exitosamente, pero no se encontraron registros de volumen para las fechas dadas. Prueba expandir los días a evaluar (ej. incluye el 18 de Marzo).</p>
                     </div>
                 )}
 
@@ -523,20 +525,21 @@ const Dashboard = () => {
                         {currentScope !== 'ONT' && (
                             <TopConsumers
                                 data={currentScope === 'GPON' ? selectedGponData.tableData : globalData.tableData}
-                                title={currentScope === 'GPON' ? `Top 5 Consumers in GPON` : `Top 5 GPONs by Volume`}
+                                title={currentScope === 'GPON' ? `Top 5 Clientes en GPON` : `Top 5 GPONs por Volumen`}
                                 type={currentScope === 'GPON' ? 'ONT' : 'GPON'}
+                                onBarClick={currentScope === 'GPON' ? handleOntClick : handleGponClick}
                             />
                         )}
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
                             <TrafficChart
                                 data={chartsTraffic}
-                                title={currentScope === 'ONT' ? `Traffic Trend (bps) - ${ontLabel}` : currentScope === 'GPON' ? `Traffic Trend (bps) - ${gponLabel}` : 'Global Traffic Trend (bps)'}
+                                title={currentScope === 'ONT' ? `Tendencia de Tráfico (bps) - ${ontLabel}` : currentScope === 'GPON' ? `Tendencia de Tráfico (bps) - ${gponLabel}` : 'Tendencia de Tráfico Global (bps)'}
                                 isTraffic={true}
                             />
                             <TrafficChart
                                 data={chartsVolume}
-                                title={currentScope === 'ONT' ? `Volume Trend (Bytes) - ${ontLabel}` : currentScope === 'GPON' ? `Volume Trend (Bytes) - ${gponLabel}` : 'Global Volume Trend (Bytes)'}
+                                title={currentScope === 'ONT' ? `Tendencia de Volumen (Bytes) - ${ontLabel}` : currentScope === 'GPON' ? `Tendencia de Volumen (Bytes) - ${gponLabel}` : 'Tendencia de Volumen Global (Bytes)'}
                                 isTraffic={false}
                             />
                         </div>

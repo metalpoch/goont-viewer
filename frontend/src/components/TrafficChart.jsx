@@ -74,7 +74,7 @@ const TrafficChart = ({ data, title, isTraffic = true }) => {
                         <Line
                             type="monotone"
                             dataKey="valueIn"
-                            name="Inbound"
+                            name="Bajada"
                             stroke={isTraffic ? '#10b981' : '#f59e0b'}
                             strokeWidth={3}
                             dot={{ r: 4, fill: '#1f2937', strokeWidth: 2 }}
@@ -83,7 +83,7 @@ const TrafficChart = ({ data, title, isTraffic = true }) => {
                         <Line
                             type="monotone"
                             dataKey="valueOut"
-                            name="Outbound"
+                            name="Subida"
                             stroke={isTraffic ? '#3b82f6' : '#ef4444'}
                             strokeWidth={3}
                             dot={{ r: 4, fill: '#1f2937', strokeWidth: 2 }}

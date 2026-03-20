@@ -22,17 +22,17 @@ const GponTable = ({ data, onRowClick, selectedGpon }) => {
 
     return (
         <div className="glass-panel table-container">
-            <h2 className="section-title">GPON Interfaces Summary</h2>
+            <h2 className="section-title">Resumen de Interfaces GPON</h2>
             <table className="data-table">
                 <thead>
                     <tr>
-                        <th>Interface</th>
-                        <th>Avg Traffic (In)</th>
-                        <th>Avg Traffic (Out)</th>
-                        <th>Avg Volume (In)</th>
-                        <th>Avg Volume (Out)</th>
-                        <th>Total Volume (In)</th>
-                        <th>Total Volume (Out)</th>
+                        <th>Interfaz</th>
+                        <th>Tráfico Prom. (Bajada)</th>
+                        <th>Tráfico Prom. (Subida)</th>
+                        <th>Volumen Prom. (Bajada)</th>
+                        <th>Volumen Prom. (Subida)</th>
+                        <th>Volumen Total (Bajada)</th>
+                        <th>Volumen Total (Subida)</th>
                     </tr>
                 </thead>
                 <tbody>

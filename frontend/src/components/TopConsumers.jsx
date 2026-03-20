@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
-const TopConsumers = ({ data, title, type = 'GPON' }) => {
+const TopConsumers = ({ data, title, type = 'GPON', onBarClick }) => {
     const topData = useMemo(() => {
         if (!data || data.length === 0) return [];
 
@@ -73,13 +73,20 @@ const TopConsumers = ({ data, title, type = 'GPON' }) => {
     return (
         <div className="glass-panel" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '2rem', padding: '1.5rem' }}>
             <div style={{ flex: '2 1 400px', minWidth: '300px' }}>
-                <h2 className="section-title">{title} - Chart</h2>
+                <h2 className="section-title">{title} - Gráfico</h2>
                 <div style={{ width: '100%', height: 300 }}>
                     <ResponsiveContainer>
                         <BarChart
                             data={topData}
                             margin={{ top: 10, right: 30, left: 10, bottom: 5 }}
                             layout="vertical"
+                            onClick={(chartData) => {
+                                if (onBarClick && chartData && chartData.activePayload) {
+                                    const clicked = chartData.activePayload[0]?.payload;
+                                    if (clicked) onBarClick(clicked.id);
+                                }
+                            }}
+                            style={{ cursor: onBarClick ? 'pointer' : 'default' }}
                         >
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" horizontal={true} vertical={false} />
                             <XAxis
@@ -107,27 +114,31 @@ const TopConsumers = ({ data, title, type = 'GPON' }) => {
                             />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend wrapperStyle={{ paddingTop: '10px' }} />
-                            <Bar dataKey="valueIn" name="Volume In" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} barSize={25} />
-                            <Bar dataKey="valueOut" name="Volume Out" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={25} />
+                            <Bar dataKey="valueIn" name="Volumen Bajada" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} barSize={25} />
+                            <Bar dataKey="valueOut" name="Volumen Subida" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={25} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
             </div>
 
             <div style={{ flex: '1 1 300px', minWidth: '250px', display: 'flex', flexDirection: 'column' }}>
-                <h2 className="section-title">{title} - Data</h2>
+                <h2 className="section-title">{title} - Datos</h2>
                 <div className="table-container" style={{ padding: 0, overflowX: 'auto', flex: 1, border: 'none', background: 'transparent' }}>
                     <table className="data-table" style={{ width: '100%' }}>
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>{type === 'GPON' ? 'GPON Port' : 'ONT Target'}</th>
-                                <th style={{ textAlign: 'right' }}>Total Volume</th>
+                                <th>{type === 'GPON' ? 'Puerto GPON' : 'Cliente ONT'}</th>
+                                <th style={{ textAlign: 'right' }}>Volumen Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             {topData.map((item, idx) => (
-                                <tr key={item.id} style={{ pointerEvents: 'none' }}>
+                                <tr
+                                    key={item.id}
+                                    onClick={() => onBarClick && onBarClick(item.id)}
+                                    style={{ cursor: onBarClick ? 'pointer' : 'default' }}
+                                >
                                     <td style={{ color: 'var(--text-muted)' }}>{idx + 1}</td>
                                     <td style={{ fontWeight: 500, color: 'var(--text-main)' }}>{item.label}</td>
                                     <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{formatBytes(item.rawTotal)}</td>

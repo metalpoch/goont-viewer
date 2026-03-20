@@ -22,17 +22,17 @@ const OntTable = ({ data, selectedGpon, onRowClick, selectedOnt }) => {
 
     return (
         <div className="glass-panel table-container">
-            <h2 className="section-title">ONT Breakdown (GPON {selectedGpon})</h2>
+            <h2 className="section-title">Desglose de Clientes ONT (GPON {selectedGpon})</h2>
             <table className="data-table">
                 <thead>
                     <tr>
-                        <th>ONT</th>
-                        <th>Device Info</th>
-                        <th>Avg Traffic (In)</th>
-                        <th>Avg Traffic (Out)</th>
-                        <th>Location/Plan</th>
-                        <th>Total Volume (In)</th>
-                        <th>Total Volume (Out)</th>
+                        <th>Cliente ONT</th>
+                        <th>Dispositivo</th>
+                        <th>Tráfico Prom. (Bajada)</th>
+                        <th>Tráfico Prom. (Subida)</th>
+                        <th>Ubicación / Plan</th>
+                        <th>Volumen Total (Bajada)</th>
+                        <th>Volumen Total (Subida)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,7 +50,7 @@ const OntTable = ({ data, selectedGpon, onRowClick, selectedOnt }) => {
                             <td>
                                 <div>{row.sn}</div>
                                 <div style={{ fontSize: '0.8rem', color: row.status === 1 ? 'var(--success)' : 'var(--text-muted)' }}>
-                                    {row.status === 1 ? 'Active' : 'Down/Offline'}
+                                    {row.status === 1 ? 'Activo' : 'Caído/Offline'}
                                 </div>
                             </td>
                             <td>{formatBps(row.avgBpsIn)}</td>
@@ -61,11 +61,11 @@ const OntTable = ({ data, selectedGpon, onRowClick, selectedOnt }) => {
                             </td>
                             <td>
                                 {formatBytes(row.totalBytesIn)}<br />
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>avg: {formatBytes(row.avgBytesIn)}</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>prom: {formatBytes(row.avgBytesIn)}</span>
                             </td>
                             <td>
                                 {formatBytes(row.totalBytesOut)}<br />
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>avg: {formatBytes(row.avgBytesOut)}</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>prom: {formatBytes(row.avgBytesOut)}</span>
                             </td>
                         </tr>
                     ))}

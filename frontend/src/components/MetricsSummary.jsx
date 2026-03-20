@@ -44,34 +44,34 @@ export const MetricsSummary = ({ data, selectedGpon, scope }) => {
         <div style={{ marginBottom: '1.5rem' }}>
             <h2 className="section-title">
                 <Activity size={24} color="var(--accent-color)" />
-                {scope === 'OLT' ? 'Global OLT Summary' : `GPON Summary (${selectedGpon})`}
+                {scope === 'OLT' ? 'Resumen Global de OLT' : scope === 'GPON' ? `Resumen GPON (${selectedGpon})` : `Resumen Cliente ONT`}
             </h2>
             <div className="metrics-grid">
                 <MetricCard
-                    title="Avg Rx Traffic (In)"
+                    title="Tráfico Prom. (Bajada)"
                     value={formatBps(data.avgBpsIn)}
-                    subtitle="During peak hours (19:00 - 23:59)"
+                    subtitle="Durante horas pico (19:00 - 23:59)"
                     icon={Download}
                     colorClass="success"
                 />
                 <MetricCard
-                    title="Avg Tx Traffic (Out)"
+                    title="Tráfico Prom. (Subida)"
                     value={formatBps(data.avgBpsOut)}
-                    subtitle="During peak hours (19:00 - 23:59)"
+                    subtitle="Durante horas pico (19:00 - 23:59)"
                     icon={Upload}
                     colorClass="accent-color"
                 />
                 <MetricCard
-                    title="Total Volume (In)"
+                    title="Volumen Total (Bajada)"
                     value={formatBytes(data.totalBytesIn)}
-                    subtitle="Accumulated in selected period"
+                    subtitle="Acumulado en el periodo"
                     icon={HardDrive}
                     colorClass="warning"
                 />
                 <MetricCard
-                    title="Total Volume (Out)"
+                    title="Volumen Total (Subida)"
                     value={formatBytes(data.totalBytesOut)}
-                    subtitle="Accumulated in selected period"
+                    subtitle="Acumulado en el periodo"
                     icon={HardDrive}
                     colorClass="danger"
                 />
