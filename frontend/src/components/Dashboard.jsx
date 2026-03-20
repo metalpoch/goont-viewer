@@ -335,7 +335,8 @@ const processDetailedOntData = (rawData) => {
             totalBytesOut
         },
         chartTraffic,
-        chartVolume
+        chartVolume,
+        rawData
     };
 };
 
@@ -350,6 +351,7 @@ const Dashboard = () => {
     // Selection States
     const [selectedGpon, setSelectedGpon] = useState(null);
     const [selectedGponData, setSelectedGponData] = useState(null);
+    const [selectedOnt, setSelectedOnt] = useState(null);
 
     // Filter memory
     const [currentFilters, setCurrentFilters] = useState(null);
@@ -358,6 +360,7 @@ const Dashboard = () => {
         setIsLoading(true);
         setError(null);
         setSelectedGpon(null);
+        setSelectedOnt(null);
         setSelectedGponData(null);
         setCurrentFilters(filters);
 
@@ -376,11 +379,13 @@ const Dashboard = () => {
         if (selectedGpon === gponIdx) {
             // Deselect
             setSelectedGpon(null);
+            setSelectedOnt(null);
             setSelectedGponData(null);
             return;
         }
 
         setSelectedGpon(gponIdx);
+        setSelectedOnt(null);
         setIsLoading(true);
         setError(null);
 
@@ -395,10 +400,49 @@ const Dashboard = () => {
         }
     };
 
-    // Determine what to display based on selection
-    const chartsTraffic = selectedGponData ? selectedGponData.chartTraffic : (globalData?.globalChartTraffic || []);
-    const chartsVolume = selectedGponData ? selectedGponData.chartVolume : (globalData?.globalChartVolume || []);
-    const summaryObj = selectedGponData ? selectedGponData.summary : (globalData?.globalSummary || null);
+    const handleOntClick = (ontIdx) => {
+        if (selectedOnt === ontIdx) {
+            setSelectedOnt(null);
+            return;
+        }
+        setSelectedOnt(ontIdx);
+    };
+
+    // Build drill-down properties
+    let chartsTraffic = globalData?.globalChartTraffic || [];
+    let chartsVolume = globalData?.globalChartVolume || [];
+    let summaryObj = globalData?.globalSummary || null;
+    let currentScope = 'OLT';
+
+    if (selectedOnt && selectedGponData) {
+        // Isolate single ONT data reusing processDetailedOntData locally
+        const fakeRawData = {};
+        fakeRawData[selectedOnt] = selectedGponData.rawData[selectedOnt];
+        const isolatedOntData = processDetailedOntData(fakeRawData);
+        chartsTraffic = isolatedOntData.chartTraffic;
+        chartsVolume = isolatedOntData.chartVolume;
+        summaryObj = isolatedOntData.summary;
+        currentScope = 'ONT';
+    } else if (selectedGponData) {
+        chartsTraffic = selectedGponData.chartTraffic;
+        chartsVolume = selectedGponData.chartVolume;
+        summaryObj = selectedGponData.summary;
+        currentScope = 'GPON';
+    }
+
+    // Breadcrumb labels
+    const oltLabel = `${currentFilters?.name || 'OLT'} (${currentFilters?.ip || 'IP'})`;
+    let gponLabel = '';
+    let ontLabel = '';
+
+    if (selectedGpon && globalData) {
+        const gItem = globalData.tableData.find(g => g.gponIdx === selectedGpon);
+        gponLabel = gItem ? `${gItem.interfaceName} (${selectedGpon})` : `GPON ${selectedGpon}`;
+    }
+    if (selectedOnt && selectedGponData && selectedGponData.tableData) {
+        const oItem = selectedGponData.tableData.find(o => o.ontIdx === selectedOnt);
+        ontLabel = oItem ? `${oItem.desp} (${oItem.sn})` : `ONT ${selectedOnt}`;
+    }
 
     return (
         <div className="app-container">
@@ -421,6 +465,38 @@ const Dashboard = () => {
 
                 <FilterBar onApplyFilter={fetchGlobalData} isLoading={isLoading} />
 
+                {currentFilters && (
+                    <div className="glass-panel" style={{ padding: '1rem 1.5rem', display: 'flex', gap: '8px', color: 'var(--text-muted)', alignItems: 'center' }}>
+                        <span
+                            style={{ cursor: 'pointer', color: selectedGpon ? 'var(--accent-color)' : 'var(--text-main)', textDecoration: selectedGpon ? 'underline' : 'none' }}
+                            onClick={() => { setSelectedGpon(null); setSelectedOnt(null); setSelectedGponData(null); }}
+                        >
+                            {oltLabel}
+                        </span>
+                        {selectedGpon && (
+                            <>
+                                <span>/</span>
+                                <span
+                                    style={{ cursor: 'pointer', color: selectedOnt ? 'var(--accent-color)' : 'var(--text-main)', textDecoration: selectedOnt ? 'underline' : 'none' }}
+                                    onClick={() => setSelectedOnt(null)}
+                                >
+                                    GPON Summary {gponLabel}
+                                </span>
+                            </>
+                        )}
+                        {selectedOnt && (
+                            <>
+                                <span>/</span>
+                                <span style={{ color: 'var(--text-main)' }}>
+                                    {ontLabel}
+                                </span>
+                            </>
+                        )}
+                    </div>
+                )}
+
+
+
                 {error && (
                     <div className="glass-panel" style={{ padding: '1rem', borderLeft: '4px solid var(--danger)', backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
                         <p style={{ color: 'var(--danger)', fontWeight: 500 }}>{error}</p>
@@ -440,33 +516,37 @@ const Dashboard = () => {
                         <MetricsSummary
                             data={summaryObj}
                             selectedGpon={selectedGpon}
-                            scope={selectedGpon ? 'GPON' : 'OLT'}
+                            scope={currentScope}
                         />
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
                             <TrafficChart
                                 data={chartsTraffic}
-                                title={selectedGpon ? `Traffic Trend (bps) - GPON ${selectedGpon}` : 'Global Traffic Trend (bps)'}
+                                title={currentScope === 'ONT' ? `Traffic Trend (bps) - ${ontLabel}` : currentScope === 'GPON' ? `Traffic Trend (bps) - ${gponLabel}` : 'Global Traffic Trend (bps)'}
                                 isTraffic={true}
                             />
                             <TrafficChart
                                 data={chartsVolume}
-                                title={selectedGpon ? `Volume Trend (Bytes) - GPON ${selectedGpon}` : 'Global Volume Trend (Bytes)'}
+                                title={currentScope === 'ONT' ? `Volume Trend (Bytes) - ${ontLabel}` : currentScope === 'GPON' ? `Volume Trend (Bytes) - ${gponLabel}` : 'Global Volume Trend (Bytes)'}
                                 isTraffic={false}
                             />
                         </div>
 
-                        <GponTable
-                            data={globalData.tableData}
-                            onRowClick={handleGponClick}
-                            selectedGpon={selectedGpon}
-                        />
-
-                        {selectedGpon && selectedGponData && selectedGponData.tableData && (
-                            <OntTable
-                                data={selectedGponData.tableData}
+                        {!selectedGpon ? (
+                            <GponTable
+                                data={globalData.tableData}
+                                onRowClick={handleGponClick}
                                 selectedGpon={selectedGpon}
                             />
+                        ) : (
+                            selectedGponData && selectedGponData.tableData && (
+                                <OntTable
+                                    data={selectedGponData.tableData}
+                                    selectedGpon={selectedGpon}
+                                    onRowClick={handleOntClick}
+                                    selectedOnt={selectedOnt}
+                                />
+                            )
                         )}
                     </>
                 )}

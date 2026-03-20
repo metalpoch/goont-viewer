@@ -40,8 +40,12 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
         const rfcInit = `${initDate}T00:00:00${tz}`;
         const rfcEnd = `${endDate}T23:59:59${tz}`;
 
+        const selectedOltObj = olts.find(o => o.ip === selectedIp);
+        const name = selectedOltObj ? selectedOltObj.name : 'Unknown OLT';
+
         onApplyFilter({
             ip: selectedIp,
+            name: name,
             initDateStr: rfcInit,
             endDateStr: rfcEnd
         });

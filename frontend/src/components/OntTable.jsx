@@ -17,7 +17,7 @@ const formatBytes = (bytes) => {
     return bytes.toFixed(0) + ' B';
 };
 
-const OntTable = ({ data, selectedGpon }) => {
+const OntTable = ({ data, selectedGpon, onRowClick, selectedOnt }) => {
     if (!data || data.length === 0) return null;
 
     return (
@@ -37,7 +37,12 @@ const OntTable = ({ data, selectedGpon }) => {
                 </thead>
                 <tbody>
                     {data.map((row) => (
-                        <tr key={row.ontIdx}>
+                        <tr
+                            key={row.ontIdx}
+                            onClick={() => onRowClick && onRowClick(row.ontIdx)}
+                            className={selectedOnt === row.ontIdx ? 'selected' : ''}
+                            style={{ cursor: 'pointer' }}
+                        >
                             <td style={{ fontWeight: 500, color: 'var(--text-main)' }}>
                                 {row.desp} <br />
                                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>IDX: {row.ontIdx}</span>
