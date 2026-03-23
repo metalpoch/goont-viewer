@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"goont-viewer/model"
 	"goont-viewer/utils"
 )
@@ -83,4 +84,8 @@ func (a *App) GetProcessedSpecificOntData(ip, gponIdx, ontIdx, initDate, endDate
 
 	processedData := utils.ProcessDetailedOntData(ontResponse)
 	return processedData, nil
+}
+
+func (a *App) OpenExternalURL(url string) {
+	runtime.BrowserOpenURL(a.ctx, url)
 }

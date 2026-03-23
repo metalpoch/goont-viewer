@@ -21,3 +21,7 @@ export function GetProcessedOntData(arg1, arg2, arg3, arg4) {
 export function GetProcessedSpecificOntData(arg1, arg2, arg3, arg4, arg5) {
   return window['go']['main']['App']['GetProcessedSpecificOntData'](arg1, arg2, arg3, arg4, arg5);
 }
+
+export function OpenExternalURL(arg1) {
+  return window['go']['main']['App']['OpenExternalURL'](arg1);
+}

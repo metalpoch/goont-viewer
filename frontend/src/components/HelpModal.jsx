@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { HelpCircle, X } from 'lucide-react';
+import { HelpCircle, X, ExternalLink, Mail, Globe } from 'lucide-react';
+import { OpenExternalURL } from '../../wailsjs/go/main/App';
 
 const HelpModal = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -61,9 +62,42 @@ const HelpModal = () => {
                                 </ul>
                             </div>
 
-                            <div style={{ marginBottom: '0' }}>
+                             <div style={{ marginBottom: '1.5rem' }}>
                                 <h3 style={{ color: 'var(--accent-color)', marginBottom: '0.5rem' }}>4. Top 5 Consumidores</h3>
                                 <p style={{ margin: 0, color: 'var(--text-muted)' }}>Gráfico de ranking situado al centro. Reacciona automáticamente mostrándote los 5 Puertos GPON o los 5 Clientes ONT (dependiendo del zoom) que <strong>más cuota de Terabytes o Gigabytes consumieron</strong>, sumando su bajada y subida. Útil para ubicar revendedores ilegales o consumo anómalo (malware).</p>
+                            </div>
+
+                            <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                                <p style={{ marginBottom: '0.75rem' }}>Desarrollado por Keiber Urbila</p>
+                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                    <button 
+                                        onClick={() => OpenExternalURL('https://keiber.info.ve/')}
+                                        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', padding: '0.25rem 0.5rem', borderRadius: '4px', transition: 'all 0.2s ease' }}
+                                        onMouseOver={(e) => e.currentTarget.style.color = 'var(--accent-color)'}
+                                        onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                                    >
+                                        <Globe size={14} />
+                                        Portfolio
+                                    </button>
+                                    <button 
+                                        onClick={() => OpenExternalURL('https://keiberup.dev/')}
+                                        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', padding: '0.25rem 0.5rem', borderRadius: '4px', transition: 'all 0.2s ease' }}
+                                        onMouseOver={(e) => e.currentTarget.style.color = 'var(--accent-color)'}
+                                        onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                                    >
+                                        <ExternalLink size={14} />
+                                        Sitio Web
+                                    </button>
+                                    <button 
+                                        onClick={() => OpenExternalURL('mailto:keiberup.dev@gmail.com')}
+                                        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', padding: '0.25rem 0.5rem', borderRadius: '4px', transition: 'all 0.2s ease' }}
+                                        onMouseOver={(e) => e.currentTarget.style.color = 'var(--accent-color)'}
+                                        onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                                    >
+                                        <Mail size={14} />
+                                        keiberup.dev@gmail.com
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -6,9 +6,28 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
     const [olts, setOlts] = useState([]);
     const [selectedIp, setSelectedIp] = useState('');
 
-    // Set exact default dates to match available data
-    const [initDate, setInitDate] = useState('2026-03-18');
-    const [endDate, setEndDate] = useState('2026-03-19');
+    // Set dynamic dates: one week ago from today
+    const getDefaultDates = () => {
+        const today = new Date();
+        const oneWeekAgo = new Date(today);
+        oneWeekAgo.setDate(today.getDate() - 7);
+        
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        
+        return {
+            initDate: formatDate(oneWeekAgo),
+            endDate: formatDate(today)
+        };
+    };
+    
+    const defaultDates = getDefaultDates();
+    const [initDate, setInitDate] = useState(defaultDates.initDate);
+    const [endDate, setEndDate] = useState(defaultDates.endDate);
 
     useEffect(() => {
         // Load OLTs on mount
