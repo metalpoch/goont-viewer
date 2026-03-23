@@ -3,25 +3,68 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+
+	"goont-viewer/model"
+	"goont-viewer/utils"
 )
 
-// App struct
+const BASE_URL string = "http://localhost:8080"
+
 type App struct {
 	ctx context.Context
 }
 
-// NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
 }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+func (a *App) GetOLTs() ([]model.OLT, error) {
+	url := BASE_URL + "/api/v1/olt"
+	var olts []model.OLT
+	if err := utils.Requests(a.ctx, url, &olts); err != nil {
+		return nil, fmt.Errorf("error fetching OLTs: %w", err)
+	}
+
+	return olts, nil
+}
+
+func (a *App) GetOltDetails(ip string) (model.OLT, error) {
+	url := fmt.Sprintf("http://%s/api/v1/olt/%s", BASE_URL, ip)
+	log.Printf("[DEBUG] Fetching OLT data from URL: %s", url)
+
+	var olt model.OLT
+	if err := utils.Requests(a.ctx, url, &olt); err != nil {
+		return model.OLT{}, fmt.Errorf("error fetching OLT details: %w", err)
+	}
+
+	return olt, nil
+}
+
+func (a *App) GetProcessedGponData(ip, initDate, endDate string) (model.ProcessedGponData, error) {
+	url := fmt.Sprintf("%s/api/v1/traffic/%s?initDate=%s&endDate=%s", BASE_URL, ip, initDate, endDate)
+
+	var rawData model.GponResponse
+	if err := utils.Requests(a.ctx, url, &rawData); err != nil {
+		return model.ProcessedGponData{}, fmt.Errorf("error fetching GPON data: %w", err)
+	}
+
+	processedData, err := utils.ProcessGponData(rawData)
+	return processedData, err
+}
+
+func (a *App) GetProcessedOntData(ip, gponIdx, initDate, endDate string) (model.ProcessedOntData, error) {
+	url := fmt.Sprintf("%s/api/v1/traffic/%s/%s?initDate=%s&endDate=%s", BASE_URL, ip, gponIdx, initDate, endDate)
+
+	var rawData model.OntResponse
+	if err := utils.Requests(a.ctx, url, &rawData); err != nil {
+		return model.ProcessedOntData{}, fmt.Errorf("error fetching ONT data: %w", err)
+	}
+
+	processedData := utils.ProcessDetailedOntData(rawData)
+	return processedData, nil
 }

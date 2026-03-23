@@ -1,4 +1,4 @@
-module goont-viewer2
+module goont-viewer
 
 go 1.23
 
