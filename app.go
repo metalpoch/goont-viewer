@@ -68,3 +68,19 @@ func (a *App) GetProcessedOntData(ip, gponIdx, initDate, endDate string) (model.
 	processedData := utils.ProcessDetailedOntData(rawData)
 	return processedData, nil
 }
+
+func (a *App) GetProcessedSpecificOntData(ip, gponIdx, ontIdx, initDate, endDate string) (model.ProcessedOntData, error) {
+	url := fmt.Sprintf("%s/api/v1/traffic/%s/%s/%s?initDate=%s&endDate=%s", BASE_URL, ip, gponIdx, ontIdx, initDate, endDate)
+
+	var rawData []model.OntMeasurement
+	if err := utils.Requests(a.ctx, url, &rawData); err != nil {
+		return model.ProcessedOntData{}, fmt.Errorf("error fetching specific ONT data: %w", err)
+	}
+
+	// Convert single ONT array to OntResponse format
+	ontResponse := make(model.OntResponse)
+	ontResponse[ontIdx] = rawData
+
+	processedData := utils.ProcessDetailedOntData(ontResponse)
+	return processedData, nil
+}

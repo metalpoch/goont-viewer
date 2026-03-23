@@ -9,3 +9,5 @@ export function GetOltDetails(arg1:string):Promise<model.OLT>;
 export function GetProcessedGponData(arg1:string,arg2:string,arg3:string):Promise<model.ProcessedGponData>;
 
 export function GetProcessedOntData(arg1:string,arg2:string,arg3:string,arg4:string):Promise<model.ProcessedOntData>;
+
+export function GetProcessedSpecificOntData(arg1:string,arg2:string,arg3:string,arg4:string,arg5:string):Promise<model.ProcessedOntData>;

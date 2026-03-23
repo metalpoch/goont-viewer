@@ -6,7 +6,7 @@ import GponTable from './GponTable';
 import OntTable from './OntTable';
 import TopConsumers from './TopConsumers';
 import HelpModal from './HelpModal';
-import { getGponTraffic, getDetailedOntTraffic } from '../services/api';
+import { getGponTraffic, getDetailedOntTraffic, getSpecificOntTraffic } from '../services/api';
 
 
 
@@ -22,6 +22,7 @@ const Dashboard = () => {
   const [selectedGpon, setSelectedGpon] = useState(null);
   const [selectedGponData, setSelectedGponData] = useState(null);
   const [selectedOnt, setSelectedOnt] = useState(null);
+  const [selectedOntData, setSelectedOntData] = useState(null);
 
   // Filter memory
   const [currentFilters, setCurrentFilters] = useState(null);
@@ -32,6 +33,7 @@ const Dashboard = () => {
     setSelectedGpon(null);
     setSelectedOnt(null);
     setSelectedGponData(null);
+    setSelectedOntData(null);
     setCurrentFilters(filters);
 
     try {
@@ -50,6 +52,7 @@ const Dashboard = () => {
       setSelectedGpon(null);
       setSelectedOnt(null);
       setSelectedGponData(null);
+      setSelectedOntData(null);
       return;
     }
 
@@ -68,12 +71,26 @@ const Dashboard = () => {
     }
   };
 
-  const handleOntClick = (ontIdx) => {
+  const handleOntClick = async (ontIdx) => {
     if (selectedOnt === ontIdx) {
       setSelectedOnt(null);
+      setSelectedOntData(null);
       return;
     }
+    
     setSelectedOnt(ontIdx);
+    setSelectedOntData(null);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const processed = await getSpecificOntTraffic(currentFilters.ip, selectedGpon, ontIdx, currentFilters.initDateStr, currentFilters.endDateStr);
+      setSelectedOntData(processed);
+    } catch (err) {
+      setError(err.message || 'Error cargando datos específicos de ONT');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Build drill-down properties
@@ -82,23 +99,10 @@ const Dashboard = () => {
   let summaryObj = globalData?.globalSummary || null;
   let currentScope = 'OLT';
 
-  if (selectedOnt && selectedGponData) {
-    // Isolate single ONT data - necesitamos filtrar los datos de la ONT específica
-    const ontData = selectedGponData.tableData.find(ont => ont.ontIdx === selectedOnt);
-    if (ontData) {
-      // Para una sola ONT, usamos los datos de la tabla directamente
-      summaryObj = {
-        avgBpsIn: ontData.avgBpsIn,
-        avgBpsOut: ontData.avgBpsOut,
-        totalBytesIn: ontData.totalBytesIn,
-        totalBytesOut: ontData.totalBytesOut
-      };
-      // Para los charts, necesitamos datos específicos de la ONT
-      // Como no tenemos charts por ONT individual, usamos datos vacíos o podríamos
-      // implementar una función para extraerlos del rawData si es necesario
-      chartsTraffic = [];
-      chartsVolume = [];
-    }
+  if (selectedOnt && selectedOntData) {
+    chartsTraffic = selectedOntData.chartTraffic;
+    chartsVolume = selectedOntData.chartVolume;
+    summaryObj = selectedOntData.summary;
     currentScope = 'ONT';
   } else if (selectedGponData) {
     chartsTraffic = selectedGponData.chartTraffic;
@@ -147,7 +151,7 @@ const Dashboard = () => {
           <div className="glass-panel" style={{ padding: '1rem 1.5rem', display: 'flex', gap: '8px', color: 'var(--text-muted)', alignItems: 'center' }}>
             <span
               style={{ cursor: 'pointer', color: selectedGpon ? 'var(--accent-color)' : 'var(--text-main)', textDecoration: selectedGpon ? 'underline' : 'none' }}
-              onClick={() => { setSelectedGpon(null); setSelectedOnt(null); setSelectedGponData(null); }}
+              onClick={() => { setSelectedGpon(null); setSelectedOnt(null); setSelectedGponData(null); setSelectedOntData(null); }}
             >
               {oltLabel}
             </span>
@@ -156,7 +160,7 @@ const Dashboard = () => {
                 <span>/</span>
                 <span
                   style={{ cursor: 'pointer', color: selectedOnt ? 'var(--accent-color)' : 'var(--text-main)', textDecoration: selectedOnt ? 'underline' : 'none' }}
-                  onClick={() => setSelectedOnt(null)}
+                  onClick={() => { setSelectedOnt(null); setSelectedOntData(null); }}
                 >
                   GPON Summary {gponLabel}
                 </span>

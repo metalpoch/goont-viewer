@@ -1,5 +1,5 @@
 // Importar el objeto App desde el backend de Wails
-import { GetOLTs, GetOltDetails, GetProcessedGponData, GetProcessedOntData } from '../../wailsjs/go/main/App';
+import { GetOLTs, GetOltDetails, GetProcessedGponData, GetProcessedOntData, GetProcessedSpecificOntData } from '../../wailsjs/go/main/App';
 
 export async function getOLTs() {
   try {
@@ -33,6 +33,15 @@ export async function getDetailedOntTraffic(ip, gponIdx, initDate, endDate) {
     return await GetProcessedOntData(ip, gponIdx, initDate, endDate);
   } catch (error) {
     console.error(`Error fetching detailed traffic for GPON ${gponIdx}:`, error);
+    throw error;
+  }
+}
+
+export async function getSpecificOntTraffic(ip, gponIdx, ontIdx, initDate, endDate) {
+  try {
+    return await GetProcessedSpecificOntData(ip, gponIdx, ontIdx, initDate, endDate);
+  } catch (error) {
+    console.error(`Error fetching specific traffic for ONT ${ontIdx} in GPON ${gponIdx}:`, error);
     throw error;
   }
 }
