@@ -13,3 +13,5 @@ export function GetProcessedOntData(arg1:string,arg2:string,arg3:string,arg4:str
 export function GetProcessedSpecificOntData(arg1:string,arg2:string,arg3:string,arg4:string,arg5:string):Promise<model.ProcessedOntData>;
 
 export function OpenExternalURL(arg1:string):Promise<void>;
+
+export function SaveFileDialog(arg1:string):Promise<string>;

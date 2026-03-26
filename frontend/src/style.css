@@ -151,6 +151,73 @@ button.btn-primary:disabled {
   transform: none;
 }
 
+button.btn-secondary {
+  background-color: var(--tertiary-bg);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+button.btn-secondary:hover {
+  background-color: var(--secondary-bg);
+  border-color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+button.btn-secondary:active {
+  transform: translateY(0);
+}
+
+button.btn-secondary:disabled {
+  background-color: var(--primary-bg);
+  color: var(--text-muted);
+  border-color: var(--tertiary-bg);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Export button specific styles */
+.export-button {
+  background: linear-gradient(135deg, var(--accent-color) 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.export-button:hover {
+  background: linear-gradient(135deg, var(--accent-hover) 0%, #7c3aed 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px -1px rgba(59, 130, 246, 0.4);
+}
+
+.export-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px -1px rgba(59, 130, 246, 0.3);
+}
+
+.export-button:disabled {
+  background: var(--tertiary-bg);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 /* Metrics Cards */
 .metrics-grid {
   display: grid;

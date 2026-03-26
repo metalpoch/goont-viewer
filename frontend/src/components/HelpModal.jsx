@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { HelpCircle, X, ExternalLink, Mail, Globe } from 'lucide-react';
 import { OpenExternalURL } from '../../wailsjs/go/main/App';
 

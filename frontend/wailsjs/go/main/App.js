@@ -25,3 +25,7 @@ export function GetProcessedSpecificOntData(arg1, arg2, arg3, arg4, arg5) {
 export function OpenExternalURL(arg1) {
   return window['go']['main']['App']['OpenExternalURL'](arg1);
 }
+
+export function SaveFileDialog(arg1) {
+  return window['go']['main']['App']['SaveFileDialog'](arg1);
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, Server, RefreshCw } from 'lucide-react';
 import { getOLTs } from '../services/api';
 
@@ -6,11 +6,10 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
     const [olts, setOlts] = useState([]);
     const [selectedIp, setSelectedIp] = useState('');
 
-    // Set dynamic dates: one week ago from today
+    // Set dynamic dates: from March 11, 2026 to today
     const getDefaultDates = () => {
         const today = new Date();
-        const oneWeekAgo = new Date(today);
-        oneWeekAgo.setDate(today.getDate() - 7);
+        const minDate = new Date(2026, 2, 11); // March 11, 2026 (month is 0-indexed)
         
         const formatDate = (date) => {
             const year = date.getFullYear();
@@ -20,7 +19,7 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
         };
         
         return {
-            initDate: formatDate(oneWeekAgo),
+            initDate: formatDate(minDate),
             endDate: formatDate(today)
         };
     };
@@ -33,16 +32,34 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
         // Load OLTs on mount
         getOLTs()
             .then(data => {
-                setOlts(data || []);
-                if (data && data.length > 0) {
-                    // Select first by default
-                    setSelectedIp(data[0].ip);
-                }
+                // Ordenar ascendentemente por nombre
+                const sortedData = (data || []).sort((a, b) => 
+                    a.name.localeCompare(b.name)
+                );
+                setOlts(sortedData);
             })
             .catch(err => {
                 console.error("Failed to load OLT lists:", err);
             });
     }, []);
+
+    const handleOltSelect = (e) => {
+        const selectedValue = e.target.value;
+        // Buscar OLT que coincida con el texto ingresado (puede ser nombre, IP o location)
+        const foundOlt = olts.find(olt => 
+            `${olt.name} - ${olt.ip} (${olt.location})` === selectedValue ||
+            olt.name === selectedValue ||
+            olt.ip === selectedValue ||
+            olt.location === selectedValue ||
+            selectedValue.includes(olt.ip)
+        );
+        
+        if (foundOlt) {
+            setSelectedIp(foundOlt.ip);
+        } else {
+            setSelectedIp('');
+        }
+    };
 
     const handleApply = () => {
         if (!selectedIp || !initDate || !endDate) return;
@@ -61,10 +78,12 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
 
         const selectedOltObj = olts.find(o => o.ip === selectedIp);
         const name = selectedOltObj ? selectedOltObj.name : 'Unknown OLT';
+        const location = selectedOltObj ? selectedOltObj.location : '';
 
         onApplyFilter({
             ip: selectedIp,
             name: name,
+            location: location,
             initDateStr: rfcInit,
             endDateStr: rfcEnd
         });
@@ -74,19 +93,17 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
         <div className="glass-panel" style={{ padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'center' }}>
             <div className="control-group">
                 <Server size={18} className="text-muted" />
-                <select
+                <input
+                    list="olt-list"
                     className="input-field"
-                    value={selectedIp}
-                    onChange={e => setSelectedIp(e.target.value)}
-                    disabled={olts.length === 0}
-                >
-                    {olts.length === 0 && <option value="">Cargando OLTs...</option>}
+                    placeholder="Buscar por nombre, IP o ubicación..."
+                    onChange={handleOltSelect}
+                />
+                <datalist id="olt-list">
                     {olts.map(olt => (
-                        <option key={olt.ip} value={olt.ip}>
-                            {olt.name} ({olt.ip})
-                        </option>
+                        <option key={olt.ip} value={`${olt.name} - ${olt.ip} - (${olt.location})`} />
                     ))}
-                </select>
+                </datalist>
             </div>
 
             <div className="control-group">
@@ -96,6 +113,8 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
                     className="input-field"
                     value={initDate}
                     onChange={e => setInitDate(e.target.value)}
+                    min="2026-03-11"
+                    max={new Date().toISOString().split('T')[0]}
                 />
                 <span style={{ color: 'var(--text-muted)' }}>hasta</span>
                 <input
@@ -103,6 +122,8 @@ const FilterBar = ({ onApplyFilter, isLoading }) => {
                     className="input-field"
                     value={endDate}
                     onChange={e => setEndDate(e.target.value)}
+                    min="2026-03-11"
+                    max={new Date().toISOString().split('T')[0]}
                 />
             </div>
 

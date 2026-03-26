@@ -1,4 +1,3 @@
-// Importar el objeto App desde el backend de Wails
 import { GetOLTs, GetOltDetails, GetProcessedGponData, GetProcessedOntData, GetProcessedSpecificOntData } from '../../wailsjs/go/main/App';
 
 export async function getOLTs() {

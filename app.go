@@ -78,7 +78,6 @@ func (a *App) GetProcessedSpecificOntData(ip, gponIdx, ontIdx, initDate, endDate
 		return model.ProcessedOntData{}, fmt.Errorf("error fetching specific ONT data: %w", err)
 	}
 
-	// Convert single ONT array to OntResponse format
 	ontResponse := make(model.OntResponse)
 	ontResponse[ontIdx] = rawData
 
@@ -88,4 +87,16 @@ func (a *App) GetProcessedSpecificOntData(ip, gponIdx, ontIdx, initDate, endDate
 
 func (a *App) OpenExternalURL(url string) {
 	runtime.BrowserOpenURL(a.ctx, url)
+}
+
+func (a *App) SaveFileDialog(defaultFilename string) (string, error) {
+	return runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+		DefaultFilename: defaultFilename,
+		Filters: []runtime.FileFilter{
+			{
+				DisplayName: "Excel Files (*.xlsx)",
+				Pattern:     "*.xlsx",
+			},
+		},
+	})
 }

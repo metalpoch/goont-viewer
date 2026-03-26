@@ -1,4 +1,3 @@
-import React from 'react';
 import { Activity, Download, Upload, HardDrive } from 'lucide-react';
 
 const MetricCard = ({ title, value, subtitle, icon: Icon, colorClass }) => (

@@ -1,5 +1,3 @@
-import React from 'react';
-
 const formatBps = (bps) => {
     if (bps === undefined || isNaN(bps)) return '0 bps';
     if (bps > 1e9) return (bps / 1e9).toFixed(2) + ' Gbps';
