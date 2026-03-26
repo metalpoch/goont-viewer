@@ -11,7 +11,7 @@ import (
 	"goont-viewer/utils"
 )
 
-const BASE_URL string = "https://10.120.93.114/goont"
+const BASE_URL string = "http://localhost:8080"
 
 type App struct {
 	ctx context.Context
