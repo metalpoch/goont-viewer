@@ -6,6 +6,13 @@
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
+  "info": {
+    "companyName": "CANTV",
+    "copyright": "MIT",
+    "productName": "GoONT Viewer",
+    "productVersion": "0.1.10",
+    "comments": "goont-viewer es una aplicación de escritorio (GUI) escrita en Go que actúa como visor para GoONT, permitiendo visualizar y analizar en tiempo real el tráfico y el estado de los equipos GPON (OLT, PON y ONT) vía SNMP mediante gráficos, tablas y dashboards interactivos, sin realizar tareas de gestión o provisión sobre los dispositivos."
+  },
   "author": {
     "name": "Keiber Urbila",
     "email": "keiberup.dev@gmail.com"
