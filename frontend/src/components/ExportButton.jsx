@@ -1,13 +1,15 @@
 import { Download } from 'lucide-react';
-import * as XLSX from 'xlsx';
-import { SaveFileDialog } from '../../wailsjs/go/main/App';
+import { ExportToExcel } from '../../wailsjs/go/main/App';
 
 const ExportButton = ({ data, columns, filename, buttonText = "Exportar Excel", sheets = [] }) => {
     const exportToExcel = async () => {
         if ((!data || data.length === 0) && sheets.length === 0) return;
 
-        const wb = XLSX.utils.book_new();
-        
+        const exportData = {
+            data: [],
+            sheets: []
+        };
+
         if (data && data.length > 0 && columns) {
             const excelData = data.map(row => {
                 const excelRow = {};
@@ -18,37 +20,30 @@ const ExportButton = ({ data, columns, filename, buttonText = "Exportar Excel", 
                 });
                 return excelRow;
             });
-
-            const ws = XLSX.utils.json_to_sheet(excelData);
-            XLSX.utils.book_append_sheet(wb, ws, "Datos");
+            exportData.data = excelData;
         }
 
-        sheets.forEach((sheet, index) => {
-            if (sheet.data && sheet.data.length > 0) {
-                const ws = XLSX.utils.json_to_sheet(sheet.data);
-                XLSX.utils.book_append_sheet(wb, ws, sheet.name || `Hoja${index + 1}`);
-            }
-        });
+        if (sheets.length > 0) {
+            exportData.sheets = sheets.map(sheet => ({
+                name: sheet.name,
+                data: sheet.data
+            }));
+        }
 
         const dateStr = new Date().toISOString().split('T')[0];
-        const defaultFilename = `${filename}_${dateStr}.xlsx`;
+        const finalFilename = `${filename}_${dateStr}`;
 
         try {
-            const filePath = await SaveFileDialog(defaultFilename);
+            const result = await ExportToExcel(exportData, finalFilename);
             
-            if (!filePath) {
+            if (!result) {
                 return;
             }
 
-            XLSX.writeFile(wb, filePath);
+            console.log('Archivo exportado exitosamente:', result);
         } catch (error) {
-            console.error('Error al guardar archivo:', error);
-            try {
-                XLSX.writeFile(wb, defaultFilename);
-            } catch (fallbackError) {
-                console.error('Error en fallback:', fallbackError);
-                alert('Error al exportar el archivo. Verifica la consola para más detalles.');
-            }
+            console.error('Error al exportar archivo:', error);
+            alert('Error al exportar el archivo. Verifica la consola para más detalles.');
         }
     };
 
