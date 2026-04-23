@@ -208,11 +208,40 @@ export default function Dashboard() {
 
   return (
     <div className="app-container">
-       <header className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="dashboard-title">
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
-          Panel de Tráfico GoONT
-        </h1>
+      <header className="dashboard-header">
+        <div className="header-left">
+          <h1 className="dashboard-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+            Panel de Tráfico
+          </h1>
+          {currentFilters && (
+            <nav className="header-breadcrumb">
+              <span
+                className={`breadcrumb-item${!selectedGpon ? ' active' : ''}`}
+                onClick={() => { setSelectedGpon(null); setSelectedOnt(null); setSelectedGponData(null); setSelectedOntData(null); }}
+              >
+                {oltLabel}
+              </span>
+              {selectedGpon && (
+                <>
+                  <span className="breadcrumb-sep">›</span>
+                  <span
+                    className={`breadcrumb-item${!selectedOnt ? ' active' : ''}`}
+                    onClick={() => { setSelectedOnt(null); setSelectedOntData(null); }}
+                  >
+                    {gponLabel}
+                  </span>
+                </>
+              )}
+              {selectedOnt && (
+                <>
+                  <span className="breadcrumb-sep">›</span>
+                  <span className="breadcrumb-item active">{ontLabel}</span>
+                </>
+              )}
+            </nav>
+          )}
+        </div>
         {globalData && !error && globalData.tableData.length > 0 && (
           <ExportButton
             data={(currentScope === 'ONT' ? selectedGponData?.tableData?.filter(o => o.ontIdx === selectedOnt) || [] : 
@@ -238,36 +267,6 @@ export default function Dashboard() {
         )}
 
         <FilterBar onApplyFilter={fetchGlobalData} isLoading={isLoading} />
-
-        {currentFilters && (
-          <div className="glass-panel" style={{ padding: '1rem 1.5rem', display: 'flex', gap: '8px', color: 'var(--text-muted)', alignItems: 'center' }}>
-            <span
-              style={{ cursor: 'pointer', color: selectedGpon ? 'var(--accent-color)' : 'var(--text-main)', textDecoration: selectedGpon ? 'underline' : 'none' }}
-              onClick={() => { setSelectedGpon(null); setSelectedOnt(null); setSelectedGponData(null); setSelectedOntData(null); }}
-            >
-              {oltLabel}
-            </span>
-            {selectedGpon && (
-              <>
-                <span>/</span>
-                <span
-                  style={{ cursor: 'pointer', color: selectedOnt ? 'var(--accent-color)' : 'var(--text-main)', textDecoration: selectedOnt ? 'underline' : 'none' }}
-                  onClick={() => { setSelectedOnt(null); setSelectedOntData(null); }}
-                >
-                  GPON Summary {gponLabel}
-                </span>
-              </>
-            )}
-            {selectedOnt && (
-              <>
-                <span>/</span>
-                <span style={{ color: 'var(--text-main)' }}>
-                  {ontLabel}
-                </span>
-              </>
-            )}
-          </div>
-        )}
 
         {error && (
           <div className="glass-panel" style={{ padding: '1rem', borderLeft: '4px solid var(--danger)', backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>

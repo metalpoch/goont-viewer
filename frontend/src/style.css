@@ -53,10 +53,19 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 2rem;
+  padding: 0.75rem 2rem;
   background-color: var(--secondary-bg);
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  gap: 1.5rem;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .dashboard-title {
@@ -313,6 +322,56 @@ button.btn-secondary:disabled {
 .data-table tbody tr.selected {
   background-color: rgba(59, 130, 246, 0.15);
   border-left: 3px solid var(--accent-color);
+}
+
+/* Header breadcrumb navigation */
+.header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.breadcrumb-item {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: inherit;
+  font-family: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.breadcrumb-item:hover {
+  color: var(--accent-color);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.breadcrumb-item.active {
+  color: var(--text-main);
+  cursor: default;
+}
+
+.breadcrumb-item.active:hover {
+  color: var(--text-main);
+  background: none;
+}
+
+.breadcrumb-sep {
+  color: var(--tertiary-bg);
+  font-size: 1.1rem;
+  user-select: none;
+  line-height: 1;
 }
 
 .spinner {
