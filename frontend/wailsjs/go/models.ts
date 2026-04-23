@@ -297,6 +297,7 @@ export namespace model {
 	    tableData: GponTableRow[];
 	    globalSummary: GlobalSummary;
 	    globalChartTraffic: ChartDataPoint[];
+	    globalChartTrafficDaily: ChartDataPoint[];
 	    globalChartVolume: ChartDataPoint[];
 	    rawData?: Record<string, Array<GponMeasurement>>;
 	
@@ -309,6 +310,7 @@ export namespace model {
 	        this.tableData = this.convertValues(source["tableData"], GponTableRow);
 	        this.globalSummary = this.convertValues(source["globalSummary"], GlobalSummary);
 	        this.globalChartTraffic = this.convertValues(source["globalChartTraffic"], ChartDataPoint);
+	        this.globalChartTrafficDaily = this.convertValues(source["globalChartTrafficDaily"], ChartDataPoint);
 	        this.globalChartVolume = this.convertValues(source["globalChartVolume"], ChartDataPoint);
 	        this.rawData = this.convertValues(source["rawData"], Array<GponMeasurement>, true);
 	    }
@@ -335,6 +337,7 @@ export namespace model {
 	    tableData: OntTableRow[];
 	    summary: GlobalSummary;
 	    chartTraffic: ChartDataPoint[];
+	    chartTrafficDaily: ChartDataPoint[];
 	    chartVolume: ChartDataPoint[];
 	    rawData?: Record<string, Array<OntMeasurement>>;
 	
@@ -347,6 +350,7 @@ export namespace model {
 	        this.tableData = this.convertValues(source["tableData"], OntTableRow);
 	        this.summary = this.convertValues(source["summary"], GlobalSummary);
 	        this.chartTraffic = this.convertValues(source["chartTraffic"], ChartDataPoint);
+	        this.chartTrafficDaily = this.convertValues(source["chartTrafficDaily"], ChartDataPoint);
 	        this.chartVolume = this.convertValues(source["chartVolume"], ChartDataPoint);
 	        this.rawData = this.convertValues(source["rawData"], Array<OntMeasurement>, true);
 	    }

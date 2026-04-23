@@ -11,7 +11,11 @@ import (
 func ProcessGponData(rawData model.GponResponse) (model.ProcessedGponData, error) {
 	tableData := []model.GponTableRow{}
 	globalChartTrafficMap := make(map[string]struct{ bpsIn, bpsOut float64 })
+	globalChartTrafficDailyMap := make(map[string]struct{ bpsIn, bpsOut float64 })
 	globalChartVolumeMap := make(map[string]struct{ vIn, vOut uint64 })
+
+	// Mapa para almacenar bytes por fecha y GPON para calcular bps diarios
+	bytesByDateAndGpon := make(map[string]map[string]struct{ bytesIn, bytesOut uint64 })
 
 	var globalTotalBytesIn, globalTotalBytesOut uint64
 	var globalAvgBpsInSum, globalAvgBpsOutSum float64
@@ -78,6 +82,15 @@ func ProcessGponData(rawData model.GponResponse) (model.ProcessedGponData, error
 				volumeOut := m.TotalBytesOut
 				block.volumeIn = &volumeIn
 				block.volumeOut = &volumeOut
+
+				// Almacenar bytes por fecha y GPON para cálculo de bps diarios
+				if _, exists := bytesByDateAndGpon[dateStr]; !exists {
+					bytesByDateAndGpon[dateStr] = make(map[string]struct{ bytesIn, bytesOut uint64 })
+				}
+				bytesByDateAndGpon[dateStr][gponIdx] = struct{ bytesIn, bytesOut uint64 }{
+					bytesIn:  volumeIn,
+					bytesOut: volumeOut,
+				}
 			}
 
 			dailyBlocks[dateStr] = block
@@ -118,6 +131,8 @@ func ProcessGponData(rawData model.GponResponse) (model.ProcessedGponData, error
 				gVolume.vOut += *block.volumeOut
 				globalChartVolumeMap[dateStr] = gVolume
 			}
+
+			// Los bps diarios se calcularán después con los bytes acumulados
 		}
 
 		avgBpsIn := 0.0
@@ -190,12 +205,70 @@ func ProcessGponData(rawData model.GponResponse) (model.ProcessedGponData, error
 		})
 	}
 
+	// Calcular bps diarios a partir de los bytes acumulados
+	// Necesitamos ordenar las fechas para calcular diferencias entre días consecutivos
+	allDates := make([]string, 0, len(bytesByDateAndGpon))
+	for date := range bytesByDateAndGpon {
+		allDates = append(allDates, date)
+	}
+	sort.Strings(allDates)
+
+	// Calcular bps diarios para cada fecha (excepto la primera)
+	for i := 1; i < len(allDates); i++ {
+		currentDate := allDates[i]
+		prevDate := allDates[i-1]
+
+		var totalBpsIn, totalBpsOut float64
+
+		// Sumar las diferencias de bytes de todos los GPONs
+		for gponIdx, currentBytes := range bytesByDateAndGpon[currentDate] {
+			if prevBytes, exists := bytesByDateAndGpon[prevDate][gponIdx]; exists {
+				// Calcular diferencia de bytes entre días
+				bytesDiffIn := float64(currentBytes.bytesIn - prevBytes.bytesIn)
+				bytesDiffOut := float64(currentBytes.bytesOut - prevBytes.bytesOut)
+
+				// Convertir a bps (bits por segundo en 24 horas)
+				// 1 byte = 8 bits, 24 horas = 86400 segundos
+				bpsIn := (bytesDiffIn * 8.0) / 86400.0
+				bpsOut := (bytesDiffOut * 8.0) / 86400.0
+
+				totalBpsIn += bpsIn
+				totalBpsOut += bpsOut
+			}
+		}
+
+		// Solo agregar al mapa si hay datos calculados
+		if totalBpsIn > 0 || totalBpsOut > 0 {
+			globalChartTrafficDailyMap[currentDate] = struct{ bpsIn, bpsOut float64 }{
+				bpsIn:  totalBpsIn,
+				bpsOut: totalBpsOut,
+			}
+		}
+	}
+
+	chartTrafficDailyKeys := make([]string, 0, len(globalChartTrafficDailyMap))
+	for k := range globalChartTrafficDailyMap {
+		chartTrafficDailyKeys = append(chartTrafficDailyKeys, k)
+	}
+	sort.Strings(chartTrafficDailyKeys)
+
+	chartTrafficDaily := make([]model.ChartDataPoint, 0, len(chartTrafficDailyKeys))
+	for _, date := range chartTrafficDailyKeys {
+		traffic := globalChartTrafficDailyMap[date]
+		chartTrafficDaily = append(chartTrafficDaily, model.ChartDataPoint{
+			Date:     date,
+			ValueIn:  traffic.bpsIn,
+			ValueOut: traffic.bpsOut,
+		})
+	}
+
 	return model.ProcessedGponData{
-		TableData:          tableData,
-		GlobalSummary:      globalSummary,
-		GlobalChartTraffic: chartTraffic,
-		GlobalChartVolume:  chartVolume,
-		RawData:            rawData,
+		TableData:               tableData,
+		GlobalSummary:           globalSummary,
+		GlobalChartTraffic:      chartTraffic,
+		GlobalChartTrafficDaily: chartTrafficDaily,
+		GlobalChartVolume:       chartVolume,
+		RawData:                 rawData,
 	}, nil
 }
 
@@ -290,6 +363,7 @@ func ProcessDetailedOntData(rawData model.OntResponse) model.ProcessedOntData {
 	}
 
 	chartTrafficMap := make(map[string]struct{ in, out float64 })
+	chartTrafficDailyMap := make(map[string]struct{ in, out float64 })
 	chartVolumeMap := make(map[string]struct{ in, out uint64 })
 
 	for dateStr, block := range dailyBlocks {
@@ -306,6 +380,7 @@ func ProcessDetailedOntData(rawData model.OntResponse) model.ProcessedOntData {
 			totalBytesOut += *block.volumeOut
 			chartVolumeMap[dateStr] = struct{ in, out uint64 }{in: *block.volumeIn, out: *block.volumeOut}
 		}
+		// Los bps diarios se calcularán después con los bytes acumulados
 	}
 
 	chartTrafficKeys := make([]string, 0, len(chartTrafficMap))
@@ -337,6 +412,81 @@ func ProcessDetailedOntData(rawData model.OntResponse) model.ProcessedOntData {
 			Date:     date,
 			ValueIn:  float64(volume.in),
 			ValueOut: float64(volume.out),
+		})
+	}
+
+	// Para ProcessDetailedOntData, necesitamos calcular bps diarios
+	// Primero, extraer bytes por fecha desde timeMap
+	bytesByDate := make(map[string]struct{ bytesIn, bytesOut uint64 })
+	for timeStr, m := range timeMap {
+		hourStr := timeStr[11:13]
+		hours, err := strconv.Atoi(hourStr)
+		if err != nil {
+			continue
+		}
+
+		dateOnlyStr := timeStr[:10]
+		isMidnight := hours == 0
+
+		blockDate, err := time.Parse("2006-01-02T15:04:05Z", dateOnlyStr+"T12:00:00Z")
+		if err != nil {
+			continue
+		}
+		if isMidnight {
+			blockDate = blockDate.AddDate(0, 0, -1)
+		}
+		dateStr := blockDate.Format("2006-01-02")
+
+		if hours == 0 {
+			bytesByDate[dateStr] = struct{ bytesIn, bytesOut uint64 }{
+				bytesIn:  m.bytes_in,
+				bytesOut: m.bytes_out,
+			}
+		}
+	}
+
+	// Calcular bps diarios
+	allDates := make([]string, 0, len(bytesByDate))
+	for date := range bytesByDate {
+		allDates = append(allDates, date)
+	}
+	sort.Strings(allDates)
+
+	for i := 1; i < len(allDates); i++ {
+		currentDate := allDates[i]
+		prevDate := allDates[i-1]
+
+		currentBytes := bytesByDate[currentDate]
+		prevBytes := bytesByDate[prevDate]
+
+		// Calcular diferencia de bytes
+		bytesDiffIn := float64(currentBytes.bytesIn - prevBytes.bytesIn)
+		bytesDiffOut := float64(currentBytes.bytesOut - prevBytes.bytesOut)
+
+		// Convertir a bps (bits por segundo en 24 horas)
+		// 1 byte = 8 bits, 24 horas = 86400 segundos
+		bpsIn := (bytesDiffIn * 8.0) / 86400.0
+		bpsOut := (bytesDiffOut * 8.0) / 86400.0
+
+		chartTrafficDailyMap[currentDate] = struct{ in, out float64 }{
+			in:  bpsIn,
+			out: bpsOut,
+		}
+	}
+
+	chartTrafficDailyKeys := make([]string, 0, len(chartTrafficDailyMap))
+	for k := range chartTrafficDailyMap {
+		chartTrafficDailyKeys = append(chartTrafficDailyKeys, k)
+	}
+	sort.Strings(chartTrafficDailyKeys)
+
+	chartTrafficDaily := make([]model.ChartDataPoint, 0, len(chartTrafficDailyKeys))
+	for _, date := range chartTrafficDailyKeys {
+		traffic := chartTrafficDailyMap[date]
+		chartTrafficDaily = append(chartTrafficDaily, model.ChartDataPoint{
+			Date:     date,
+			ValueIn:  traffic.in,
+			ValueOut: traffic.out,
 		})
 	}
 
@@ -417,6 +567,7 @@ func ProcessDetailedOntData(rawData model.OntResponse) model.ProcessedOntData {
 				volumeOut := m.BytesOut
 				block.volumeIn = &volumeIn
 				block.volumeOut = &volumeOut
+
 			}
 
 			dailyBlocks[dateStr] = block
@@ -470,10 +621,11 @@ func ProcessDetailedOntData(rawData model.OntResponse) model.ProcessedOntData {
 	}
 
 	return model.ProcessedOntData{
-		TableData:    ontTableData,
-		Summary:      model.GlobalSummary{AvgBpsIn: avgBpsIn, AvgBpsOut: avgBpsOut, TotalBytesIn: totalBytesIn, TotalBytesOut: totalBytesOut},
-		ChartTraffic: chartTraffic,
-		ChartVolume:  chartVolume,
-		RawData:      rawData,
+		TableData:         ontTableData,
+		Summary:           model.GlobalSummary{AvgBpsIn: avgBpsIn, AvgBpsOut: avgBpsOut, TotalBytesIn: totalBytesIn, TotalBytesOut: totalBytesOut},
+		ChartTraffic:      chartTraffic,
+		ChartTrafficDaily: chartTrafficDaily,
+		ChartVolume:       chartVolume,
+		RawData:           rawData,
 	}
 }

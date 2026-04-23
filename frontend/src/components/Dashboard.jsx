@@ -86,25 +86,30 @@ export default function Dashboard() {
   };
 
   let chartsTraffic = globalData?.globalChartTraffic || [];
+  let chartsTrafficDaily = globalData?.globalChartTrafficDaily || [];
   let chartsVolume = globalData?.globalChartVolume || [];
   let summaryObj = globalData?.globalSummary || null;
   let currentScope = 'OLT';
 
   if (selectedOnt && selectedOntData) {
     chartsTraffic = selectedOntData.chartTraffic;
+    chartsTrafficDaily = selectedOntData.chartTrafficDaily || [];
     chartsVolume = selectedOntData.chartVolume;
     summaryObj = selectedOntData.summary;
     currentScope = 'ONT';
   } else if (selectedGponData) {
     chartsTraffic = selectedGponData.chartTraffic;
+    chartsTrafficDaily = selectedGponData.chartTrafficDaily || [];
     chartsVolume = selectedGponData.chartVolume;
     summaryObj = selectedGponData.summary;
     currentScope = 'GPON';
   }
 
   const getExportColumns = () => {
+    const oltColumn = { key: 'oltName', header: 'OLT' };
     if (currentScope === 'ONT') {
       return [
+        oltColumn,
         { key: 'ontIdx', header: 'ID ONT' },
         { key: 'desp', header: 'Cliente ONT' },
         { key: 'sn', header: 'Serial' },
@@ -120,6 +125,7 @@ export default function Dashboard() {
       ];
     } else if (currentScope === 'GPON') {
       return [
+        oltColumn,
         { key: 'ontIdx', header: 'ID ONT' },
         { key: 'desp', header: 'Cliente ONT' },
         { key: 'sn', header: 'Serial' },
@@ -135,6 +141,7 @@ export default function Dashboard() {
       ];
     } else {
       return [
+        oltColumn,
         { key: 'gponIdx', header: 'ID GPON' },
         { key: 'interfaceName', header: 'Interfaz' },
         { key: 'avgBpsIn', header: 'Tráfico Prom. Bajada (bps)' },
@@ -152,8 +159,19 @@ export default function Dashboard() {
     
     if (chartsTraffic && chartsTraffic.length > 0) {
       sheets.push({
-        name: 'Gráfica_Tráfico',
+        name: 'Gráfica_Tráfico_19_23h',
         data: chartsTraffic.map(item => ({
+          Fecha: item.date,
+          'Tráfico_Bajada_bps': item.valueIn,
+          'Tráfico_Subida_bps': item.valueOut
+        }))
+      });
+    }
+    
+    if (chartsTrafficDaily && chartsTrafficDaily.length > 0) {
+      sheets.push({
+        name: 'Gráfica_Tráfico_00h',
+        data: chartsTrafficDaily.map(item => ({
           Fecha: item.date,
           'Tráfico_Bajada_bps': item.valueIn,
           'Tráfico_Subida_bps': item.valueOut
@@ -197,11 +215,11 @@ export default function Dashboard() {
         </h1>
         {globalData && !error && globalData.tableData.length > 0 && (
           <ExportButton
-            data={currentScope === 'ONT' ? selectedGponData?.tableData?.filter(o => o.ontIdx === selectedOnt) || [] : 
+            data={(currentScope === 'ONT' ? selectedGponData?.tableData?.filter(o => o.ontIdx === selectedOnt) || [] : 
                   currentScope === 'GPON' ? selectedGponData?.tableData || [] : 
-                  globalData.tableData}
+                  globalData.tableData).map(row => ({ ...row, oltName: currentFilters?.name || '' }))}
             columns={getExportColumns()}
-            filename={`goont_export_${currentScope.toLowerCase()}`}
+            filename={`${(currentFilters?.name || 'OLT').replace(/[^a-zA-Z0-9_\u00f1\u00d1\s-]/g, '').trim().replace(/\s+/g, '_')}_goont_export_${currentScope.toLowerCase()}`}
             buttonText="Exportar Todo a Excel"
             sheets={getChartSheets()}
           />
@@ -285,8 +303,10 @@ export default function Dashboard() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
               <TrafficChart
                 data={chartsTraffic}
+                dailyData={chartsTrafficDaily}
                 title={currentScope === 'ONT' ? `Tendencia de Tráfico (bps) - ${ontLabel}` : currentScope === 'GPON' ? `Tendencia de Tráfico (bps) - ${gponLabel}` : 'Tendencia de Tráfico Global (bps)'}
                 isTraffic={true}
+                showPeakPoints={true}
               />
               <TrafficChart
                 data={chartsVolume}

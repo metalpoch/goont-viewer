@@ -1,11 +1,12 @@
 package model
 
 type ProcessedGponData struct {
-	TableData          []GponTableRow   `json:"tableData"`
-	GlobalSummary      GlobalSummary    `json:"globalSummary"`
-	GlobalChartTraffic []ChartDataPoint `json:"globalChartTraffic"`
-	GlobalChartVolume  []ChartDataPoint `json:"globalChartVolume"`
-	RawData            GponResponse     `json:"rawData,omitempty"`
+	TableData               []GponTableRow   `json:"tableData"`
+	GlobalSummary           GlobalSummary    `json:"globalSummary"`
+	GlobalChartTraffic      []ChartDataPoint `json:"globalChartTraffic"`
+	GlobalChartTrafficDaily []ChartDataPoint `json:"globalChartTrafficDaily"`
+	GlobalChartVolume       []ChartDataPoint `json:"globalChartVolume"`
+	RawData                 GponResponse     `json:"rawData,omitempty"`
 }
 
 type GponTableRow struct {
@@ -33,11 +34,12 @@ type ChartDataPoint struct {
 }
 
 type ProcessedOntData struct {
-	TableData    []OntTableRow    `json:"tableData"`
-	Summary      GlobalSummary    `json:"summary"`
-	ChartTraffic []ChartDataPoint `json:"chartTraffic"`
-	ChartVolume  []ChartDataPoint `json:"chartVolume"`
-	RawData      OntResponse      `json:"rawData,omitempty"`
+	TableData         []OntTableRow    `json:"tableData"`
+	Summary           GlobalSummary    `json:"summary"`
+	ChartTraffic      []ChartDataPoint `json:"chartTraffic"`
+	ChartTrafficDaily []ChartDataPoint `json:"chartTrafficDaily"`
+	ChartVolume       []ChartDataPoint `json:"chartVolume"`
+	RawData           OntResponse      `json:"rawData,omitempty"`
 }
 
 type OntTableRow struct {
