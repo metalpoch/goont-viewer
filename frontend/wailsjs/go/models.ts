@@ -17,6 +17,7 @@ export namespace main {
 	export class ExportData {
 	    data: any[];
 	    sheets: ExportSheet[];
+	    columnOrder: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new ExportData(source);
@@ -26,6 +27,7 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.data = source["data"];
 	        this.sheets = this.convertValues(source["sheets"], ExportSheet);
+	        this.columnOrder = source["columnOrder"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

@@ -103,8 +103,12 @@ export default function Dashboard() {
   }
 
   const getExportColumns = () => {
+    const oltName = currentFilters?.name || 'OLT';
+    const oltIp = currentFilters?.ip || '';
+    
     if (currentScope === 'ONT') {
       return [
+        { key: 'dispositivo', header: 'Dispositivo' },
         { key: 'ontIdx', header: 'ID ONT' },
         { key: 'desp', header: 'Cliente ONT' },
         { key: 'sn', header: 'Serial' },
@@ -120,6 +124,7 @@ export default function Dashboard() {
       ];
     } else if (currentScope === 'GPON') {
       return [
+        { key: 'dispositivo', header: 'Dispositivo' },
         { key: 'ontIdx', header: 'ID ONT' },
         { key: 'desp', header: 'Cliente ONT' },
         { key: 'sn', header: 'Serial' },
@@ -135,6 +140,7 @@ export default function Dashboard() {
       ];
     } else {
       return [
+        { key: 'dispositivo', header: 'Dispositivo' },
         { key: 'gponIdx', header: 'ID GPON' },
         { key: 'interfaceName', header: 'Interfaz' },
         { key: 'avgBpsIn', header: 'Tráfico Prom. Bajada (bps)' },
@@ -204,6 +210,12 @@ export default function Dashboard() {
             filename={`goont_export_${currentScope.toLowerCase()}`}
             buttonText="Exportar Todo a Excel"
             sheets={getChartSheets()}
+            oltName={currentFilters?.name || 'OLT'}
+            oltIp={currentFilters?.ip || ''}
+            selectedGpon={selectedGpon}
+            gponInterfaceName={selectedGpon && globalData ? globalData.tableData.find(g => g.gponIdx === selectedGpon)?.interfaceName : null}
+            selectedOnt={selectedOnt}
+            currentScope={currentScope}
           />
         )}
       </header>

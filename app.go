@@ -103,8 +103,9 @@ func (a *App) SaveFileDialog(defaultFilename string) (string, error) {
 }
 
 type ExportData struct {
-	Data   []map[string]interface{} `json:"data"`
-	Sheets []ExportSheet            `json:"sheets"`
+	Data        []map[string]interface{} `json:"data"`
+	Sheets     []ExportSheet            `json:"sheets"`
+	ColumnOrder []string                `json:"columnOrder"`
 }
 
 type ExportSheet struct {
@@ -138,8 +139,10 @@ func (a *App) ExportToExcel(exportData ExportData, filename string) (string, err
 		sheetName := "Datos"
 		f.SetSheetName("Sheet1", sheetName)
 
-		headers := make([]string, 0)
-		if len(exportData.Data) > 0 {
+		var headers []string
+		if len(exportData.ColumnOrder) > 0 {
+			headers = exportData.ColumnOrder
+		} else {
 			for key := range exportData.Data[0] {
 				headers = append(headers, key)
 			}
