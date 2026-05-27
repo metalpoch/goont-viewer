@@ -11,7 +11,7 @@ import (
 	"goont-viewer/utils"
 )
 
-const BASE_URL string = "http://localhost:8080"
+const BASE_URL string = "http://localhost:3000"
 
 type App struct {
 	ctx context.Context
@@ -103,14 +103,14 @@ func (a *App) SaveFileDialog(defaultFilename string) (string, error) {
 }
 
 type ExportData struct {
-	Data        []map[string]interface{} `json:"data"`
+	Data        []map[string]any `json:"data"`
 	Sheets     []ExportSheet            `json:"sheets"`
 	ColumnOrder []string                `json:"columnOrder"`
 }
 
 type ExportSheet struct {
 	Name string                   `json:"name"`
-	Data []map[string]interface{} `json:"data"`
+	Data []map[string]any `json:"data"`
 }
 
 func (a *App) ExportToExcel(exportData ExportData, filename string) (string, error) {
